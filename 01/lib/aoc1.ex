@@ -35,6 +35,17 @@ defmodule Aoc1 do
     end
   end
 
+  def find_first_repeat(x, acc) do
+    {found, sum} = acc
+    new_sum = x + sum
+    if Enum.member?(found, new_sum) do
+      IO.puts "wat"
+      {:halt, {found, new_sum}}
+    else
+      {:cont, {[new_sum | found], x + sum}}
+    end
+  end
+
   @doc """
   Reduce frequency variations list to single accumulated value.
 
@@ -44,15 +55,18 @@ defmodule Aoc1 do
       10
 
       iex> Aoc1.process_data ["-1", "-2", "-3"]
-      -6
+      {[-6, -3, -1], -6}
 
-      iex> Aoc1.process_data ["-10", "wat", "13"]
-      3
+      iex> Aoc1.process_data ["-10", "wat", "+13"]
+      {[10, 6, 3, 1], 10}
+
+      iex> Aoc1.process_data ["+8", "+7", "-7", "+7", "+1"]
+      {[15, 8], 15}
   """
   def process_data(data) do
     data
     |> Enum.map(&parse_int/1)
-    |> Enum.reduce(0, fn x, acc -> x + acc end)
+    |> Enum.reduce_while({[], 0}, &find_first_repeat/2)
   end
 
   @doc """
