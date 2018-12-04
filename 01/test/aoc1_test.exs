@@ -3,6 +3,6 @@ defmodule Aoc1Test do
   doctest Aoc1
 
   test "Calculate correct value from fixture data" do
-    assert Aoc1.main("test/aoc1_fixture.txt") == 3
+    assert Aoc1.main("test/aoc1_fixture.txt") == -4
   end
 end

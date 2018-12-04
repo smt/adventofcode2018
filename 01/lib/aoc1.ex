@@ -27,22 +27,12 @@ defmodule Aoc1 do
 
       iex> Aoc1.parse_int "not a number"
       0
+
   """
   def parse_int(str) do
-    case Integer.parse(str) do
+    case Integer.parse str do
       {int, _} -> int
       :error   -> 0
-    end
-  end
-
-  def find_first_repeat(x, acc) do
-    {found, sum} = acc
-    new_sum = x + sum
-    if Enum.member?(found, new_sum) do
-      IO.puts "wat"
-      {:halt, {found, new_sum}}
-    else
-      {:cont, {[new_sum | found], x + sum}}
     end
   end
 
@@ -51,22 +41,51 @@ defmodule Aoc1 do
 
   ## Examples
 
-      iex> Aoc1.process_data ["+1", "+2", "+3", "+4"]
+      iex> Aoc1.find_first_repeat 3, {[3, 1], false}
+      {:cont, {[6, 3, 1], false}}
+
+      iex> Aoc1.find_first_repeat -2, {[3, 1], false}
+      {:halt, {[1, 3, 1], true}}
+
+  """
+  def find_first_repeat(x, state) do
+    {acc, _} = state
+    [ov | _] = acc
+    nv = x + ov
+    if Enum.member? acc, nv do
+      {:halt, {[nv | acc], true}}
+    else
+      {:cont, {[nv | acc], false}}
+    end
+  end
+
+  @doc """
+  Reduce frequency variations list to single accumulated value.
+
+  ## Examples
+
+      iex> Aoc1.process_data [1, 1, -2]
+      0
+
+      iex> Aoc1.process_data [1, -1]
+      0
+
+      iex> Aoc1.process_data [3, 3, 4, -2, -4]
       10
 
-      iex> Aoc1.process_data ["-1", "-2", "-3"]
-      {[-6, -3, -1], -6}
+      iex> Aoc1.process_data [-6, 3, 8, 5, -6]
+      5
 
-      iex> Aoc1.process_data ["-10", "wat", "+13"]
-      {[10, 6, 3, 1], 10}
+      iex> Aoc1.process_data [7, 7, -2, -7, -4]
+      14
 
-      iex> Aoc1.process_data ["+8", "+7", "-7", "+7", "+1"]
-      {[15, 8], 15}
   """
-  def process_data(data) do
-    data
-    |> Enum.map(&parse_int/1)
-    |> Enum.reduce_while({[], 0}, &find_first_repeat/2)
+  def process_data(data, state \\ {[0], false}) do
+    {acc, is_finished} = Enum.reduce_while(data, state, &find_first_repeat/2)
+    case is_finished do
+      true -> List.first acc
+      _    -> process_data(data, {acc, is_finished})
+    end
   end
 
   @doc """
@@ -77,6 +96,8 @@ defmodule Aoc1 do
     |> File.open!([:read])
     |> IO.read(:all)
     |> String.split(~r/\n/)
+    |> Enum.filter(fn x -> String.length(x) > 0 end)
+    |> Enum.map(&parse_int/1)
     |> process_data
   end
   def main do
